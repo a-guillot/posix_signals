@@ -105,8 +105,8 @@ int main()
     /* Setting the timer to an absolute time (ref + 1 second) with period = 6 */
     time_parameters.it_value.tv_sec = ref.tv_sec + 1;
     time_parameters.it_value.tv_nsec = ref.tv_nsec;
-    time_parameters.it_interval.tv_sec = 6;
-    time_parameters.it_interval.tv_nsec = 0;
+    time_parameters.it_interval.tv_sec = 0;
+    time_parameters.it_interval.tv_nsec = 6 / 1e6;
 
     CHECK(timer_settime(timer_child, TIMER_ABSTIME, &time_parameters, NULL)
                 != -1);
@@ -126,8 +126,8 @@ int main()
     /* Setting the timer to an absolute time (ref + 1 second) with period = 4 */
     time_parameters.it_value.tv_sec = ref.tv_sec + 1;
     time_parameters.it_value.tv_nsec = ref.tv_nsec;
-    time_parameters.it_interval.tv_sec = 4;
-    time_parameters.it_interval.tv_nsec = 0;
+    time_parameters.it_interval.tv_sec = 0;
+    time_parameters.it_interval.tv_nsec = 4 * 1e6;
 
     CHECK(timer_settime(timer_parent, TIMER_ABSTIME, &time_parameters, NULL)
                 != -1);
