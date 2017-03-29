@@ -20,13 +20,18 @@ void handler()
 {
   int i;
   clock_gettime(CLOCK_REALTIME, &ref2);
-  printf("Démarrage T%d a %d s et %li ns", ((C == 4) +1), (int)ref2.tv_sec, ref2.tv_nsec);
+  printf("Démarrage T%d a %d s et %li ns",
+      ((C == 4) +1),
+      (int)ref2.tv_sec,
+      ref2.tv_nsec);
 
   for (i = 1; i < (C * k); i++)
   {
     clock_gettime(CLOCK_REALTIME, &ref);
   }
-  printf("\nFin de T%d a %d s et %li ns", ((C == 4) +1), (int)ref.tv_sec, ref.tv_nsec);
+  printf("\nFin de T%d a %d s et %li ns",
+      ((C == 4) +1),
+      (int)ref.tv_sec, ref.tv_nsec);
   printf("\nDurée : %lins\n\n", ref.tv_nsec - ref2.tv_nsec);
 
   int overtime;
@@ -52,7 +57,7 @@ int main()
 
   /* Set scheduling options to FIFO, with priority=3 */
   scheduling_parameters.sched_priority = 3;
-  CHECK(sched_setscheduler(getpid(), SCHED_FIFO, &scheduling_parameters) == -1);
+  CHECK(sched_setscheduler(getpid(), SCHED_FIFO, &scheduling_parameters) != -1);
 
   /* Blocking everything except SIGRTMIN, SIGALARM and SIGINT*/
   sigfillset(&block);
@@ -85,7 +90,7 @@ int main()
 
   /* Creating 2 processes */
   pid_t child;
-  CHECK(child = fork() != -1);
+  CHECK((child = fork()) != -1);
 
   if (!child) // child
   {
@@ -96,10 +101,7 @@ int main()
     scheduling_parameters.sched_priority = 2;
     CHECK(sched_setscheduler(child, SCHED_FIFO, &scheduling_parameters) != -1);
 
-    /* Creating a timer that generates a SIGRTMIN signal when it expires */
-    sevp.sigev_notify = SIGEV_SIGNAL;
-    sevp.sigev_signo = SIGRTMIN;
-
+    /* Creating the timer */
     CHECK(timer_create(CLOCK_REALTIME, &sevp, &timer_child) != -1);
 
     /* Setting the timer to an absolute time (ref + 1 second) with period = 6 */
@@ -120,10 +122,7 @@ int main()
     scheduling_parameters.sched_priority = 2;
     CHECK(sched_setscheduler(child, SCHED_FIFO, &scheduling_parameters) != -1);
 
-    /* Creating a timer that generates a SIGRTMIN signal when it expires */
-    sevp.sigev_notify = SIGEV_SIGNAL;
-    sevp.sigev_signo = SIGRTMIN;
-
+    /* Creating the timer */
     CHECK(timer_create(CLOCK_REALTIME, &sevp, &timer_parent) != -1);
 
     /* Setting the timer to an absolute time (ref + 1 second) with period = 4 */
