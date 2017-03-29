@@ -8,7 +8,7 @@
 
 /* Global Variables */
 int C = 0; // capacity
-int k = 0; // calibration
+unsigned int k = 0; // calibration
 
 struct timespec ref, ref2;
 
@@ -18,32 +18,30 @@ timer_t timer_child;
 
 void handler()
 {
-  int i;
   clock_gettime(CLOCK_REALTIME, &ref2);
+
   printf("Démarrage T%d a %d s et %li ns",
       ((C == 4) +1),
       (int)ref2.tv_sec,
       ref2.tv_nsec);
 
-  for (i = 1; i < (C * k); i++)
-  {
+  for (size_t i = 1; i < (C * k); i++)
     clock_gettime(CLOCK_REALTIME, &ref);
-  }
+
   printf("\nFin de T%d a %d s et %li ns",
       ((C == 4) +1),
       (int)ref.tv_sec, ref.tv_nsec);
+
   printf("\nDurée : %lins\n\n", ref.tv_nsec - ref2.tv_nsec);
 
   int overtime;
   if (timer_parent == NULL)
-    overtime = timer_getoverrun(timer_child);
+    CHECK((overtime = timer_getoverrun(timer_child)) != -1);
   else
-    overtime = timer_getoverrun(timer_parent);
+    CHECK((overtime = timer_getoverrun(timer_parent)) != -1);
 
-  if (overtime == -1)
-    printf("error\n");
-  else
-    printf("(c : overtime) = (%d : %d)\n", C, overtime);
+  if (overtime > 0)
+    printf("T%d overtimed!\n", ((C == 4) + 1));
 }
 
 int main()
