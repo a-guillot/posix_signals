@@ -10,7 +10,6 @@
 int C = 0; // capacity
 unsigned int k = 0; // calibration
 
-struct timespec ref, ref2;
 
 // timers
 timer_t timer_parent;
@@ -18,30 +17,42 @@ timer_t timer_child;
 
 void handler()
 {
-  clock_gettime(CLOCK_REALTIME, &ref2);
+  struct timespec start, end;
+  int id = (C == 4) + 1; // allows us to tell if it is T1 or T2
 
-  printf("Démarrage T%d a %d s et %li ns",
-      ((C == 4) +1),
-      (int)ref2.tv_sec,
-      ref2.tv_nsec);
+  clock_gettime(CLOCK_REALTIME, &start);
+
+  if (id == 2)
+    printf("\t");
+  printf("Démarrage T%d a %d s et %li ns.\n",
+          id, (int)start.tv_sec, start.tv_nsec);
 
   for (size_t i = 1; i < (C * k); i++)
-    clock_gettime(CLOCK_REALTIME, &ref);
+    clock_gettime(CLOCK_REALTIME, &end);
 
-  printf("\nFin de T%d a %d s et %li ns",
-      ((C == 4) +1),
-      (int)ref.tv_sec, ref.tv_nsec);
+  if (id == 2)
+    printf("\t");
+  printf("Fin de T%d a %d s et %li ns\n",
+          id, (int)end.tv_sec, end.tv_nsec);
 
-  printf("\nDurée : %lins\n\n", ref.tv_nsec - ref2.tv_nsec);
+  if (id == 2)
+    printf("\t");
+  printf("Durée : %lins\n", end.tv_nsec - start.tv_nsec);
 
-  int overtime;
-  if (timer_parent == NULL)
-    CHECK((overtime = timer_getoverrun(timer_child)) != -1);
+  // start ADDED
+  int overrun_number = 0;
+  timer_t * my_timer; // allows us to use the correct one
+
+  if (id == 1)
+    my_timer = &timer_parent;
   else
-    CHECK((overtime = timer_getoverrun(timer_parent)) != -1);
+    my_timer = &timer_child;
 
-  if (overtime > 0)
-    printf("T%d overtimed!\n", ((C == 4) + 1));
+  CHECK((overrun_number = timer_getoverrun(*my_timer)) != -1);
+
+  if (overrun_number)
+    printf("T%d -----> %d échéances ratées\n", id, overrun_number);
+  // end ADDED
 }
 
 int main()
@@ -52,6 +63,7 @@ int main()
   struct sigaction sa; // struture linking SIGRTMIN to handler()
   struct sigevent sevp; // structure specifying the timer's behaviour
   struct itimerspec time_parameters;
+  struct timespec ref; // used for calibration purposes
 
   /* Set scheduling options to FIFO, with priority=3 */
   scheduling_parameters.sched_priority = 3;
@@ -106,7 +118,7 @@ int main()
     time_parameters.it_value.tv_sec = ref.tv_sec + 1;
     time_parameters.it_value.tv_nsec = ref.tv_nsec;
     time_parameters.it_interval.tv_sec = 0;
-    time_parameters.it_interval.tv_nsec = 6 / 1e6;
+    time_parameters.it_interval.tv_nsec = 6 * 1e6;
 
     CHECK(timer_settime(timer_child, TIMER_ABSTIME, &time_parameters, NULL)
                 != -1);
@@ -132,7 +144,7 @@ int main()
     CHECK(timer_settime(timer_parent, TIMER_ABSTIME, &time_parameters, NULL)
                 != -1);
   }
-  alarm(30);
+  alarm(4);
 
   /* Indefinitely wait for signals */
   while (1)
