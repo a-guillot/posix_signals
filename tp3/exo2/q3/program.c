@@ -22,22 +22,8 @@ void handler()
 
   clock_gettime(CLOCK_REALTIME, &start);
 
-  if (id == 2)
-    printf("\t");
-  printf("Démarrage T%d a %d s et %li ns.\n",
-          id, (int)start.tv_sec, start.tv_nsec);
-
   for (size_t i = 1; i < (C * k); i++)
     clock_gettime(CLOCK_REALTIME, &end);
-
-  if (id == 2)
-    printf("\t");
-  printf("Fin de T%d a %d s et %li ns\n",
-          id, (int)end.tv_sec, end.tv_nsec);
-
-  if (id == 2)
-    printf("\t");
-  printf("Durée : %lins\n", end.tv_nsec - start.tv_nsec);
 
   // start ADDED
   int overrun_number = 0;
