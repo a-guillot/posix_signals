@@ -7,12 +7,13 @@
 \usepackage[T1]{fontenc} 
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{amsmath}
 
 %----------------------------------------------------------------------------------------
 %	DOCUMENT INFORMATION
 %----------------------------------------------------------------------------------------
 
-\title{Émulation et routage inter-domaine \\Réseaux d'opérateurs}
+\title{Systèmes et programmation temps-réels}
 
 \author{Andréas Guillot}
 
@@ -31,6 +32,8 @@
 Chaque exercice a son propre makefile.
 
 Lancement des programmes avec sudo taskset -c 0 ./program
+
+Selon \textit{man sched\_get\_priority\_min} : \textit{"Processes with numerically higher priority values are scheduled before processes with numerically lower priority values"}.
 
 \section*{\underline{Exercice 1} :}
 
@@ -77,8 +80,23 @@ La solution que j'ai choisie pour éliminer les appels à \textit{printf()} cons
 
 \subsection*{Question 5 :}
 
+Ajout une tâche avec une capacité égale à 6 et une période égale à 8 de plus faible priorité ne sera pas ordonnançable.
 
+En effet, on peut utiliser le test RMA pour voir que la valeur est tellement importante qu'on peut conclure que ce ne sera pas ordonnançable sans avoir besoin de faire le test RMA étendu :
 
+$$
+\frac{2}{4} + \frac{4}{6} + \frac{6}{8} = 1.91
+$$
+
+De plus, on voit que le processeur est constamment occupé par T1 et T2 dans les 8 premières secondes d'exécution du programme vu que T1 (de plus haute priorité) va être exécuté pendant 4 unités de temps et que T2 va occuper les 4 unités restantes.
+
+\begin{figure}
+  \includegraphics[width=\linewidth]{2-5.png}
+  \caption{Exemple de T3 qui parvient tant bien que mal à s'exécuter dans un programme non ordonnançable}
+  \label{fig:2.5}
+\end{figure}
+
+Néanmoins, on peut voir T3 s'exécuter, comme dans la figure \ref{fig:2.5}.
 %----------------------------------------------------------------------------------------
 
 

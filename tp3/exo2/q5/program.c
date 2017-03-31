@@ -26,16 +26,10 @@ void handler()
 {
   /* ADDED: sending strings to another process via the queue */
   struct timespec start, end;
-  if (C == 2)
-    id = 1;
-  else if (C == 4)
-    id = 2;
-  else
-    id = 3;
+  int id = (C == 6) + (C >= 4) + 1;
 
   char buffer[MSGSIZE]; // sending buffer
   buffer[0] = 0; // reset the string;
-  printf("ttttt%d\n", id);
 
   clock_gettime(CLOCK_REALTIME, &start);
 
@@ -57,8 +51,10 @@ void handler()
 
   if (id == 1)
     my_timer = &timer_parent;
-  else
+  else if (id == 2)
     my_timer = &timer_child;
+  else
+    my_timer = &timer_second_child;
 
   CHECK((overrun_number = timer_getoverrun(*my_timer)) != -1);
 
@@ -198,8 +194,8 @@ int main()
       }
       else // printer and changing t3's priority
       {
-        /* Change child's priority to 10 */
-        scheduling_parameters.sched_priority = 10;
+        /* Change child's priority to 1 */
+        scheduling_parameters.sched_priority = 1;
         CHECK(sched_setscheduler(child, SCHED_FIFO, &scheduling_parameters)
                                   != -1);
 
